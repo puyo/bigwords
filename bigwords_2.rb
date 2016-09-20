@@ -51,71 +51,116 @@ def can_be_made?(letters, word)
   word_chars.empty?
 end
 
-def possible_words(letters, node)
-  if node.leaf                          # at a terminating node?
-    node.leaf                           # no more tree branches, must check all these words
-  elsif letters.include?(node.letter)   # we have this letter
-    possible_words(letters, node.yes) + # longest word might be in here
-      possible_words(letters, node.no)  # longest word might not use this letter
-  else                                  # we don't have this letter
-    possible_words(letters, node.no)    # we can only make words that do not have this letter
-  end
-end
-
-def biggest_words(index, letters)
-  possible_words(letters, index)
-      .group_by(&:size)
-      .sort
-      .map { |_size, words| words }
-      .reverse_each
-      .each do |words|
-    result_words = words.select { |word| can_be_made?(letters, word) }
-    return result_words if result_words.any?
-  end
-end
-
 # Visualisation of search index
 class SearchVis < Gosu::Window
   def initialize
-    super 1024, 768
+    fullscreen = false
+    super 1024, 768, fullscreen, 1000
 
     self.caption = 'Scrabble Word Search'
 
     words = load_word_list
     @index = Node.new(words)
     @font = Gosu::Font.new(20)
-  end
-
-  def load_word_list
-    %w(cat bat frog emu dog fish cow cad bead)
+    srand 0
+    @letters = 'tac'
+    @current_node = @index
+    @nodes_left = []
+    @t0 = Time.now
   end
 
   def draw
-    draw_node(@index, self.width / 2, 40, 200)
-  end
-
-  def draw_node(node, x, y, children_sep)
-    red = Gosu::Color.new(0xff_ff0000)
-    draw_circle(x, y, 20, red)
-    @font.draw(node.letter, x - 5, y - 10, 0, 1.0, 1.0, 0xff_ffff00)
-    if node.leaf
-      # OK for now
-      rotate(90, x, y) do
-        @font.draw(node.leaf.join(', '), x + 25, y - 10, 0)
-      end
-    else
-      ax = x - children_sep
-      ay = y + 40
-      bx = x + children_sep
-      by = y + 40
-      draw_line(x, y, red, ax, ay, red)
-      draw_line(x, y, red, bx, by, red)
-      draw_node(node.yes, ax, ay, children_sep/2)
-      draw_node(node.no, bx, by, children_sep/2)
-    end
+    draw_node(@index, self.width / 2, 100, 200, 80)
   end
 
   def update
+    if Time.now > (@t0 + update_interval / 1000)
+      advance_search
+    end
+  end
+
+  private
+
+  def load_word_list
+    %w(cat catfish bat emu dog fish cow cad bead at)
+  end
+
+  RED = 0xaa_ff0000
+  GREEN = 0xff_00ff00
+  PINK = 0xff_ff00ff
+  YELLOW = 0xff_ffff00
+  WHITE = 0xff_ffffff
+
+  def draw_node(node, x, y, child_dx, child_dy)
+    radius = 20
+    if @current_node == node
+      col = PINK
+      @letters.chars.each_with_index do |letter, index|
+        lcol = letter == @current_node.letter ? GREEN : RED
+        xpos = x + radius * 2 + @font.text_width(@letters[0...index])
+        @font.draw(letter, xpos, y - @font.height / 2, 0, 1.0, 1.0, lcol)
+      end
+    else
+      col = RED
+    end
+    draw_circle(x, y, radius, YELLOW)
+    if node.leaf
+      words_col = @current_node == node ? GREEN : WHITE
+      rotate(90, x, y) do
+        @font.draw(node.leaf.join(', '), x + radius + 5, y - @font.height / 2, 0, 1.0, 1.0, words_col)
+      end
+    else
+      ax = x - child_dx
+      ay = y + child_dy
+      bx = x + child_dx
+      by = y + child_dy
+      draw_line(x, y, GREEN, ax, ay, GREEN)
+      draw_line(x, y, RED, bx, by, RED)
+      draw_node(node.yes, ax, ay, child_dx / 2, child_dy)
+      draw_node(node.no, bx, by, child_dx / 2, child_dy)
+    end
+    @font.draw(node.letter, x - 5, y - @font.height / 2, 0, 1.0, 1.0, YELLOW)
+  end
+
+  def advance_search
+    node = @current_node
+    if node.nil?
+      @current_node = @index
+      return
+    end
+    if node.leaf                          # at a terminating node?
+      if @nodes_left
+        @current_node = @nodes_left.pop
+      end
+    elsif @letters.include?(node.letter)   # we have this letter
+      @current_node = node.yes
+      @nodes_left.push node.no
+    else                                  # we don't have this letter
+      @current_node = node.no
+    end
+  end
+
+  def biggest_words(index, letters)
+    possible_words(letters, index)
+      .group_by(&:size)
+      .sort
+      .map { |_size, words| words }
+      .reverse_each
+      .each do |words|
+      result_words = words.select { |word| can_be_made?(letters, word) }
+      return result_words if result_words.any?
+    end
+  end
+
+  def possible_words(letters, node)
+    if node.leaf                          # at a terminating node?
+      node.leaf                           # no more tree branches, must check all these words
+    elsif letters.include?(node.letter)   # we have this letter
+      possible_words(letters, node.yes) + # longest word might be in here
+        possible_words(letters, node.no)  # longest word might not use this letter
+    else                                  # we don't have this letter
+      possible_words(letters, node.no)    # we can only make words that do not have this letter
+    end
   end
 
   def run
@@ -124,8 +169,6 @@ class SearchVis < Gosu::Window
       puts [letters, biggest_words(@index, letters).sort.join(', ')].join(': ')
     end
   end
-
-  private
 
   def draw_circle(x, y, radius, colour, segments: 32)
     coef = 2.0 * Math::PI / segments
