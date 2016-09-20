@@ -21,11 +21,7 @@
 # Traverse this tree to narrow down the possibilities by ignoring
 # words that do not contain the letters we want.
 
-require './random_letters'
-
-ALPHABET = 'abcdefghijklmnopqrstuvwxyz'.chars
-VOWELS = 'aeiou'.chars
-CONSONANTS = ALPHABET - VOWELS
+require_relative 'random_letters'
 
 # A node in our word decision tree for a given letter.
 class Node
@@ -78,10 +74,11 @@ def possible_words(letters, node)
   if node.leaf
     # No criteria to decide. Consider these words.
     node.leaf
-  elsif letters.include?(node.letter) # we have this letter!
+  elsif letters.include?(node.letter) # yes or no
     # It could be in the yes or no branch (not all letters must be used)
-    possible_words(letters, node.yes) + possible_words(letters, node.no)
-  else # we don't have this letter :(
+    possible_words(letters, node.yes) +
+      possible_words(letters, node.no)
+  else # no
     # Filter out words that have this letter. We can't make them.
     possible_words(letters, node.no)
   end
@@ -119,7 +116,9 @@ else
   $stdout.puts 'done'
 end
 
+srand 0
+
 50.times do
   letters = random_letters(10)
-  puts [letters, biggest_words(root_node, letters).join(', ')].join(': ')
+  puts [letters, biggest_words(root_node, letters).sort.join(', ')].join(': ')
 end

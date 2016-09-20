@@ -1,3 +1,7 @@
+ALPHABET = 'abcdefghijklmnopqrstuvwxyz'.chars
+VOWELS = 'aeiou'.chars
+CONSONANTS = ALPHABET - VOWELS
+
 def random_letters(length)
   vowels = length / 3 # 33% vowels
   consonants = length - vowels
