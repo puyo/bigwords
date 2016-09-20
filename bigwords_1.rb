@@ -71,16 +71,13 @@ def can_be_made?(letters, word)
 end
 
 def possible_words(letters, node)
-  if node.leaf
-    # No criteria to decide. Consider these words.
-    node.leaf
-  elsif letters.include?(node.letter) # yes or no
-    # It could be in the yes or no branch (not all letters must be used)
-    possible_words(letters, node.yes) +
-      possible_words(letters, node.no)
-  else # no
-    # Filter out words that have this letter. We can't make them.
-    possible_words(letters, node.no)
+  if node.leaf                          # at a terminating node?
+    node.leaf                           # no more tree branches, must check all these words
+  elsif letters.include?(node.letter)   # we have this letter
+    possible_words(letters, node.yes) + # longest word might be in here
+      possible_words(letters, node.no)  # longest word might not use this letter
+  else                                  # we don't have this letter
+    possible_words(letters, node.no)    # we can only make words that do not have this letter
   end
 end
 
