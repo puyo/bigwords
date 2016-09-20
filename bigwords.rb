@@ -21,6 +21,8 @@
 # Traverse this tree to narrow down the possibilities by ignoring
 # words that do not contain the letters we want.
 
+require './random_letters'
+
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'.chars
 VOWELS = 'aeiou'.chars
 CONSONANTS = ALPHABET - VOWELS
@@ -95,21 +97,6 @@ def biggest_words(root_node, letters)
     return results if results.any?
   end
 end
-
-# ------
-
-def random_letters_from(length, source)
-  Array.new(length) { source[rand(source.size)] }
-end
-
-def random_letters(length)
-  vowels = length / 3 # 33% vowels
-  consonants = length - vowels
-  result = random_letters_from(vowels, VOWELS) + random_letters_from(consonants, CONSONANTS)
-  result.shuffle.join
-end
-
-# ------
 
 index_path = 'words.idx'
 root_node = nil
