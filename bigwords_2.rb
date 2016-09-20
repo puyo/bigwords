@@ -62,12 +62,15 @@ module SearchVis
       @nodes_left = []
       @t0 = Time.now
       @paused = false
+      @results = []
     end
 
     private
 
     def draw
       draw_node(@index, width / 2, 100, 200, 80)
+      @font.draw(@letters, 10, height - 3*(@font.height + 10), 0, 1.0, 1.0, WHITE)
+      @font.draw(@results.join(', '), 10, height - 2*(@font.height + 10), 0, 1.0, 1.0, GREEN)
       if @paused
         @font.draw("PAUSED", 10, height - @font.height - 10, 0, 1.0, 1.0, WHITE)
       end
@@ -121,9 +124,11 @@ module SearchVis
       node = @current_node
       if node.nil?
         @current_node = @index
+        @results = []
         return
       end
       if node.leaf                          # at a terminating node?
+        @results += node.leaf
         if @nodes_left
           @current_node = @nodes_left.pop
         end
