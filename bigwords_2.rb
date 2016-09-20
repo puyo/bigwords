@@ -43,6 +43,13 @@ module SearchVis
 
   # Top level window
   class Window < Gosu::Window
+    RED = 0xaa_ff0000
+    GREEN = 0xff_00ff00
+    HL = 0xff_ffffff
+    NORMAL = 0x80_ffffff
+    YELLOW = 0xff_ffff00
+    WHITE = 0xff_ffffff
+
     def initialize
       fullscreen = false
       super 1024, 768, fullscreen, 1000
@@ -50,34 +57,31 @@ module SearchVis
       @index = Node.new(load_word_list)
       @font = Gosu::Font.new(20)
       srand 0
-      @letters = 'tac'
+      @letters = 'owtac'
       @current_node = @index
       @nodes_left = []
       @t0 = Time.now
-    end
-
-    def draw
-      draw_node(@index, width / 2, 100, 200, 80)
-    end
-
-    def update
-      if Time.now > (@t0 + update_interval / 1000)
-        advance_search
-      end
+      @paused = false
     end
 
     private
 
+    def draw
+      draw_node(@index, width / 2, 100, 200, 80)
+      if @paused
+        @font.draw("PAUSED", 10, height - @font.height - 10, 0, 1.0, 1.0, WHITE)
+      end
+    end
+
+    def update
+      if !@paused && Time.now > (@t0 + update_interval / 1000)
+        advance_search
+      end
+    end
+
     def load_word_list
       %w(cat catfish bat emu dog fish cow cad bead at)
     end
-
-    RED = 0xaa_ff0000
-    GREEN = 0xff_00ff00
-    HL = 0xff_ffffff
-    NORMAL = 0x80_ffffff
-    YELLOW = 0xff_ffff00
-    WHITE = 0xff_ffffff
 
     def draw_node(node, x, y, child_dx, child_dy)
       radius = 20
@@ -90,6 +94,9 @@ module SearchVis
         end
       else
         circle_col = NORMAL
+      end
+      if @nodes_left.include?(node)
+        circle_col = HL
       end
       draw_circle(x, y, radius, circle_col)
       if node.leaf
@@ -164,13 +171,6 @@ module SearchVis
       word_chars.empty?
     end
 
-    def run
-      20.times do
-        letters = random_letters(10)
-        puts [letters, biggest_words(@index, letters).sort.join(', ')].join(': ')
-      end
-    end
-
     def draw_circle(x, y, radius, colour, segments: 32)
       coef = 2.0 * Math::PI / segments
       verts = []
@@ -186,6 +186,15 @@ module SearchVis
     def each_edge(arr)
       arr.size.times do |n|
         yield arr[n], arr[(n + 1) % arr.size]
+      end
+    end
+
+    def button_down(id)
+      case id
+      when Gosu::Button::KbSpace # 'throw'
+        @paused = !@paused
+      when Gosu::Button::KbEscape, char_to_button_id('q')
+        close
       end
     end
   end
