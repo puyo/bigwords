@@ -126,4 +126,4 @@ time = Benchmark.measure do
     puts [letters, biggest_words(root_node, letters).sort.join(', ')].join(': ')
   end
 end
-puts time.real
+puts time.utime
