@@ -95,10 +95,10 @@ end
 
 require 'benchmark'
 
-time = Benchmark.measure do
-  index_path = 'words.idx'
-  root_node = nil
+index_path = 'words.idx'
+root_node = nil
 
+index_time = Benchmark.measure do
   if !File.exist?(index_path)
     File.open(index_path, 'w') do |f|
       words = File.read('wordlist.txt')
@@ -119,11 +119,17 @@ time = Benchmark.measure do
     end
     $stdout.puts 'done'
   end
+end
 
+puts
+
+search_time = Benchmark.measure do
   srand 0
-  20.times do
+  50.times do
     letters = random_letters(10)
     puts [letters, biggest_words(root_node, letters).sort.join(', ')].join(': ')
   end
 end
-puts time.utime
+
+puts
+printf "Index time: %.3fs, search time: %.3fs\n", index_time.utime, search_time.utime

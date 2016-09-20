@@ -30,9 +30,11 @@ time = Benchmark.measure do
   words = File.read('wordlist.txt').each_line.to_a.map(&:strip)
 
   srand 0
-  20.times do
+  50.times do
     letters = random_letters(10)
     puts [letters, biggest_words(words, letters).sort.join(', ')].join(': ')
   end
 end
-puts time.utime
+
+puts
+printf "Search time: %.3fs\n", time.utime
