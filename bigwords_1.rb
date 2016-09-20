@@ -82,13 +82,14 @@ def possible_words(letters, node)
 end
 
 def biggest_words(root_node, letters)
-  letters = letters.downcase
-  possible_words = possible_words(letters, root_node).group_by(&:size)
-  (1..letters.size).reverse_each do |size| # biggest to smallest
-    words = possible_words[size]
-    next if words.nil?
-    results = words.select { |word| can_be_made?(letters, word) }
-    return results if results.any?
+  possible_words(letters, root_node)
+      .group_by(&:size)
+      .sort
+      .map { |_size, words| words }
+      .reverse_each
+      .each do |words|
+    result_words = words.select { |word| can_be_made?(letters, word) }
+    return result_words if result_words.any?
   end
 end
 

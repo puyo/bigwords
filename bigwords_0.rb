@@ -13,13 +13,14 @@ def can_be_made?(letters, word)
 end
 
 def biggest_words(all_words, letters)
-  letters = letters.downcase
-  all_words = all_words.group_by(&:size)
-  (1..letters.size).reverse_each do |size| # biggest to smallest
-    words = all_words[size]
-    next if words.nil?
-    results = words.select { |word| can_be_made?(letters, word) }
-    return results if results.any?
+  all_words
+    .group_by(&:size)
+    .sort
+    .map { |_size, words| words }
+    .reverse_each
+    .each do |words|
+    result_words = words.select { |word| can_be_made?(letters, word) }
+    return result_words if result_words.any?
   end
 end
 
