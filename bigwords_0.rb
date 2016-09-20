@@ -24,10 +24,15 @@ def biggest_words(all_words, letters)
   end
 end
 
-srand 0
+require 'benchmark'
 
-words = File.read('wordlist.txt').each_line.to_a.map(&:strip)
-50.times do
-  letters = random_letters(10)
-  puts [letters, biggest_words(words, letters).sort.join(', ')].join(': ')
+time = Benchmark.measure do
+  words = File.read('wordlist.txt').each_line.to_a.map(&:strip)
+
+  srand 0
+  20.times do
+    letters = random_letters(10)
+    puts [letters, biggest_words(words, letters).sort.join(', ')].join(': ')
+  end
 end
+puts time.real

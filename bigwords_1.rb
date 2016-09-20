@@ -93,33 +93,37 @@ def biggest_words(root_node, letters)
   end
 end
 
-index_path = 'words.idx'
-root_node = nil
+require 'benchmark'
 
-if !File.exist?(index_path)
-  File.open(index_path, 'w') do |f|
-    words = File.read('wordlist.txt')
-            .each_line
-            .map(&:chomp)
-            .select { |word| !word.empty? }
-    $stdout.print 'Building word index...'
+time = Benchmark.measure do
+  index_path = 'words.idx'
+  root_node = nil
+
+  if !File.exist?(index_path)
+    File.open(index_path, 'w') do |f|
+      words = File.read('wordlist.txt')
+              .each_line
+              .map(&:chomp)
+              .select { |word| !word.empty? }
+      $stdout.print 'Building word index...'
+      $stdout.flush
+      root_node = Node.new(words)
+      $stdout.puts 'done'
+      f << Marshal.dump(root_node)
+    end
+  else
+    $stdout.print 'Loading word index...'
     $stdout.flush
-    root_node = Node.new(words)
+    File.open(index_path) do |f|
+      root_node = Marshal.load(f)
+    end
     $stdout.puts 'done'
-    f << Marshal.dump(root_node)
   end
-else
-  $stdout.print 'Loading word index...'
-  $stdout.flush
-  File.open(index_path) do |f|
-    root_node = Marshal.load(f)
+
+  srand 0
+  20.times do
+    letters = random_letters(10)
+    puts [letters, biggest_words(root_node, letters).sort.join(', ')].join(': ')
   end
-  $stdout.puts 'done'
 end
-
-srand 0
-
-50.times do
-  letters = random_letters(10)
-  puts [letters, biggest_words(root_node, letters).sort.join(', ')].join(': ')
-end
+puts time.real
