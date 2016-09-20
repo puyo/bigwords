@@ -132,9 +132,7 @@ else
   $stdout.puts 'done'
 end
 
-#srand(0)
-10.times do
+50.times do
   letters = random_letters(10)
-  #letters = "Gregory McIntyre"
   puts [letters, biggest_words(root_node, letters).join(', ')].join(': ')
 end
