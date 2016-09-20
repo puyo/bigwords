@@ -98,7 +98,10 @@ root_node = nil
 
 if !File.exist?(index_path)
   File.open(index_path, 'w') do |f|
-    words = File.read('wordlist.txt').each_line.to_a.map(&:strip)
+    words = File.read('wordlist.txt')
+            .each_line
+            .map(&:chomp)
+            .select { |word| !word.empty? }
     $stdout.print 'Building word index...'
     $stdout.flush
     root_node = Node.new(words)
