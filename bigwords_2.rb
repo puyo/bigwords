@@ -101,9 +101,7 @@ module SearchVis
       else
         circle_col = COL_NORMAL
       end
-      if @nodes_left.include?(node)
-        circle_col = COL_HL
-      end
+      circle_col = COL_HL if @nodes_left.include?(node) # highlight if node is significant
       draw_circle(x, y, radius, circle_col)
       if node.leaf
         words_col = @current_node == node ? COL_YES : COL_NO
@@ -128,40 +126,15 @@ module SearchVis
       if node.nil?
         @current_node = @index
         @results = []
-      elsif node.leaf                          # at a terminating node?
+      elsif node.leaf                        # at a terminating node?
         @results += node.leaf
         @current_node = @nodes_left.pop
-        if @current_node.nil?
-          @paused = true
-        end
+        @paused = true if @current_node.nil?
       elsif @letters.include?(node.letter)   # we have this letter
         @current_node = node.yes
         @nodes_left.push node.no
-      else                                  # we don't have this letter
+      else                                   # we don't have this letter
         @current_node = node.no
-      end
-    end
-
-    def biggest_words(index, letters)
-      possible_words(letters, index)
-        .group_by(&:size)
-        .sort
-        .map { |_size, words| words }
-        .reverse_each
-        .each do |words|
-        result_words = words.select { |word| can_be_made?(letters, word) }
-        return result_words if result_words.any?
-      end
-    end
-
-    def possible_words(letters, node)
-      if node.leaf                          # at a terminating node?
-        node.leaf                           # no more tree branches, must check all these words
-      elsif letters.include?(node.letter)   # we have this letter
-        possible_words(letters, node.yes) + # longest word might be in here
-          possible_words(letters, node.no)  # longest word might not use this letter
-      else                                  # we don't have this letter
-        possible_words(letters, node.no)    # we can only make words that do not have this letter
       end
     end
 
