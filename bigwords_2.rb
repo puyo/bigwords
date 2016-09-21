@@ -43,12 +43,11 @@ module SearchVis
 
   # Top level window
   class Window < Gosu::Window
-    RED = 0xaa_ff0000
-    GREEN = 0xff_00ff00
-    HL = 0xff_ffffff
-    NORMAL = 0x80_ffffff
-    YELLOW = 0xff_ffff00
-    WHITE = 0xff_ffffff
+    COL_NO = 0xc0_ff0000
+    COL_YES = 0xff_00ff00
+    COL_HL = 0xff_ffffff
+    COL_NORMAL = 0x50_ffffff
+    COL_LETTER = 0xff_ffff00
 
     INTERVAL = 1000 # millisecond delay between animation frames
 
@@ -71,10 +70,10 @@ module SearchVis
 
     def draw
       draw_node(@index, width / 2, 100, 200, 80)
-      @font.draw(@letters, 10, height - 3*(@font.height + 10), 0, 1.0, 1.0, WHITE)
-      @font.draw(@results.join(', '), 10, height - 2*(@font.height + 10), 0, 1.0, 1.0, GREEN)
+      @font.draw(@letters, 10, height - 3*(@font.height + 10), 0)
+      @font.draw(@results.join(', '), 10, height - 2*(@font.height + 10), 0, 1.0, 1.0, COL_YES)
       if @paused
-        @font.draw("PAUSED", 10, height - @font.height - 10, 0, 1.0, 1.0, WHITE)
+        @font.draw("PAUSED", 10, height - @font.height - 10, 0)
       end
     end
 
@@ -91,21 +90,23 @@ module SearchVis
     def draw_node(node, x, y, child_dx, child_dy)
       radius = 20
       if @current_node == node
-        circle_col = HL
-        @letters.chars.each_with_index do |letter, index|
-          lcol = letter == @current_node.letter ? GREEN : RED
-          xpos = x + radius * 2 + @font.text_width(@letters[0...index])
-          @font.draw(letter, xpos, y - @font.height / 2, 0, 1.0, 1.0, lcol)
+        circle_col = COL_HL
+        rotate(-45, x, y) do
+          @letters.chars.each_with_index do |letter, index|
+            lcol = letter == @current_node.letter ? COL_YES : COL_NO
+            xpos = x + radius * 2 + @font.text_width(@letters[0...index])
+            @font.draw(letter, xpos, y - @font.height / 2, 0, 1.0, 1.0, lcol)
+          end
         end
       else
-        circle_col = NORMAL
+        circle_col = COL_NORMAL
       end
       if @nodes_left.include?(node)
-        circle_col = HL
+        circle_col = COL_HL
       end
       draw_circle(x, y, radius, circle_col)
       if node.leaf
-        words_col = @current_node == node ? GREEN : WHITE
+        words_col = @current_node == node ? COL_YES : COL_NO
         rotate(90, x, y) do
           @font.draw(node.leaf.join(', '), x + radius + 5, y - @font.height / 2, 0, 1.0, 1.0, words_col)
         end
@@ -114,12 +115,12 @@ module SearchVis
         ay = y + child_dy
         bx = x + child_dx
         by = y + child_dy
-        draw_line(x, y, GREEN, ax, ay, GREEN)
-        draw_line(x, y, RED, bx, by, RED)
+        draw_line(x, y, COL_YES, ax, ay, COL_YES)
+        draw_line(x, y, COL_NO, bx, by, COL_NO)
         draw_node(node.yes, ax, ay, child_dx / 2, child_dy)
         draw_node(node.no, bx, by, child_dx / 2, child_dy)
       end
-      @font.draw(node.letter, x - 5, y - @font.height / 2, 0, 1.0, 1.0, YELLOW)
+      @font.draw(node.letter, x - 5, y - @font.height / 2, 0, 1.0, 1.0, COL_LETTER)
     end
 
     def advance_search
