@@ -50,9 +50,11 @@ module SearchVis
     YELLOW = 0xff_ffff00
     WHITE = 0xff_ffffff
 
+    INTERVAL = 1000 # millisecond delay between animation frames
+
     def initialize
       fullscreen = false
-      super 1024, 768, fullscreen, 1000
+      super 1024, 768, fullscreen, INTERVAL
       self.caption = 'Search Visualisation'
       @index = Node.new(load_word_list)
       @font = Gosu::Font.new(20)
@@ -125,12 +127,11 @@ module SearchVis
       if node.nil?
         @current_node = @index
         @results = []
-        return
-      end
-      if node.leaf                          # at a terminating node?
+      elsif node.leaf                          # at a terminating node?
         @results += node.leaf
-        if @nodes_left
-          @current_node = @nodes_left.pop
+        @current_node = @nodes_left.pop
+        if @current_node.nil?
+          @paused = true
         end
       elsif @letters.include?(node.letter)   # we have this letter
         @current_node = node.yes
