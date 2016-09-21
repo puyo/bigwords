@@ -49,11 +49,11 @@ module SearchVis
     COL_NORMAL = 0x50_ffffff
     COL_LETTER = 0xff_ffff00
 
-    INTERVAL = 1000 # millisecond delay between animation frames
+    INTERVAL = 0.5 # seconds between updates
 
     def initialize
       fullscreen = false
-      super 1024, 768, fullscreen, INTERVAL
+      super 1024, 768, fullscreen
       self.caption = 'Search Visualisation'
       @index = Node.new(load_word_list)
       @font = Gosu::Font.new(20)
@@ -61,7 +61,7 @@ module SearchVis
       @letters = 'owtac'
       @current_node = @index
       @nodes_left = []
-      @t0 = Time.now
+      @t0 = Time.now.to_f
       @paused = false
       @results = []
     end
@@ -78,7 +78,8 @@ module SearchVis
     end
 
     def update
-      if !@paused && Time.now > (@t0 + update_interval / 1000)
+      if !@paused && Time.now.to_f > (@t0 + INTERVAL)
+        @t0 = Time.now.to_f
         advance_search
       end
     end
