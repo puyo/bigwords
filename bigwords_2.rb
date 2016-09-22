@@ -48,8 +48,9 @@ module SearchVis
     COL_HL = 0xff_ffffff
     COL_NORMAL = 0x50_ffffff
     COL_LETTER = 0xff_ffff00
+    COL_BLACK = 0xff_000000
 
-    INTERVAL = 0.5 # seconds between updates
+    INTERVAL = 1.0 # seconds between updates
 
     def initialize
       fullscreen = false
@@ -103,7 +104,6 @@ module SearchVis
         circle_col = COL_NORMAL
       end
       circle_col = COL_HL if @nodes_left.include?(node) # highlight if node is significant
-      draw_circle(x, y, radius, circle_col)
       if node.leaf
         words_col = @current_node == node ? COL_YES : COL_NO
         rotate(90, x, y) do
@@ -119,6 +119,7 @@ module SearchVis
         draw_node(node.yes, ax, ay, child_dx / 2, child_dy)
         draw_node(node.no, bx, by, child_dx / 2, child_dy)
       end
+      draw_circle(x, y, radius, circle_col, COL_BLACK)
       @font.draw(node.letter, x - 5, y - @font.height / 2, 0, 1.0, 1.0, COL_LETTER)
     end
 
@@ -152,7 +153,7 @@ module SearchVis
       word_chars.empty?
     end
 
-    def draw_circle(x, y, radius, colour, segments: 32)
+    def draw_circle(x, y, radius, col, bg_col, segments: 32)
       coef = 2.0 * Math::PI / segments
       verts = []
       segments.times do |n|
@@ -160,7 +161,8 @@ module SearchVis
         verts << CP::Vec2.new(radius * Math.cos(rads) + x, radius * Math.sin(rads) + y)
       end
       each_edge(verts) do |a, b|
-        draw_line(a.x, a.y, colour, b.x, b.y, colour)
+        draw_triangle(x, y, bg_col, a.x, a.y, bg_col, b.x, b.y, bg_col)
+        draw_line(a.x, a.y, col, b.x, b.y, col)
       end
     end
 
