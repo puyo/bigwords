@@ -2,7 +2,6 @@
 
 require_relative 'random_letters'
 require 'gosu'
-require 'chipmunk'
 
 # Visualisation of search index
 module SearchVis
@@ -158,11 +157,11 @@ module SearchVis
       verts = []
       segments.times do |n|
         rads = n * coef
-        verts << CP::Vec2.new(radius * Math.cos(rads) + x, radius * Math.sin(rads) + y)
+        verts << [radius * Math.cos(rads) + x, radius * Math.sin(rads) + y]
       end
       each_edge(verts) do |a, b|
-        draw_triangle(x, y, bg_col, a.x, a.y, bg_col, b.x, b.y, bg_col)
-        draw_line(a.x, a.y, col, b.x, b.y, col)
+        draw_triangle(x, y, bg_col, a[0], a[1], bg_col, b[0], b[1], bg_col)
+        draw_line(a[0], a[1], col, b[0], b[1], col)
       end
     end
 
