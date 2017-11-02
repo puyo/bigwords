@@ -16,23 +16,23 @@ def biggest_words(all_words, letters)
   all_words
     .group_by(&:size)
     .sort
-    .map { |_size, words| words }
-    .reverse_each
-    .each do |words|
-    result_words = words.select { |word| can_be_made?(letters, word) }
-    return result_words if result_words.any?
-  end
+    .map(&:last)
+    .reverse
+    .map do |words|
+      words.select { |word| can_be_made?(letters, word) }.sort
+    end.flatten
 end
 
 require 'benchmark'
 
 time = Benchmark.measure do
-  words = File.read('wordlist.txt').each_line.to_a.map(&:strip)
+  words = File.read('wordlist.txt').each_line.to_a.map(&:strip).reject{|w| w.size == 0 }
 
   srand 0
   50.times do
-    letters = random_letters(10)
-    puts [letters, biggest_words(words, letters).sort.join(', ')].join(': ')
+    letters = random_letters(7)
+    big = biggest_words(words, letters)
+    puts "#{letters}: (#{big.size}) #{big[0..10].join(', ')}..."
   end
 end
 

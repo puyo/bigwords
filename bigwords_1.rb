@@ -83,14 +83,12 @@ end
 
 def biggest_words(root_node, letters)
   possible_words(letters, root_node)
-      .group_by(&:size)
-      .sort
-      .map { |_size, words| words }
-      .reverse_each
-      .each do |words|
-    result_words = words.select { |word| can_be_made?(letters, word) }
-    return result_words if result_words.any?
-  end
+    .group_by(&:size)
+    .sort
+    .map(&:last)
+    .reverse.map do |words|
+      words.select { |word| can_be_made?(letters, word) }.sort
+    end.flatten
 end
 
 require 'benchmark'
@@ -126,8 +124,9 @@ puts
 search_time = Benchmark.measure do
   srand 0
   50.times do
-    letters = random_letters(10)
-    puts [letters, biggest_words(root_node, letters).sort.join(', ')].join(': ')
+    letters = random_letters(7)
+    big = biggest_words(root_node, letters)
+    puts "#{letters}: (#{big.size}) #{big[0..10].join(', ')}..."
   end
 end
 

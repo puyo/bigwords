@@ -55,9 +55,9 @@ bundle exec ruby bigwords_0.rb
   - D is the number of letters in the dictionary word
   - T is the number of Scrabble tiles
 
-  T goes down 1 for each D since we will remove them as we check them off.
-  This is a linear reduction each time, so the performance is `O(DT)` or,
-  assuming both are similar numbers, `O(N^2)`
+  T goes down 1 for each D as we check them off. This is a linear reduction
+  each time. The performance is `O(DT)` or, assuming both are similar numbers,
+  `O(N^2)`
 
 - What does `O(N^2)` mean?
 
